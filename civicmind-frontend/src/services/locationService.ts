@@ -30,43 +30,58 @@ export class LocationService {
    * Reverse geocode coordinate into address and ward.
    */
   static async reverseGeocode(lat: number, lng: number): Promise<LocationSelection> {
-    // Check if Google Maps is initialized
-    if (typeof window !== "undefined" && (window as any).google && (window as any).google.maps) {
-      try {
-        const geocoder = new (window as any).google.maps.Geocoder();
-        const response = await geocoder.geocode({ location: { lat, lng } });
+    const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(
+      lat
+    )}&lon=${encodeURIComponent(lng)}&addressdetails=1`;
 
-        if (response.results && response.results.length > 0) {
-          const result = response.results[0];
-          const address = result.formatted_address;
+    try {
+      const response = await fetch(nominatimUrl, {
+        headers: {
+          Accept: "application/json",
+        },
+      });
 
-          let ward = "Ward 1";
-          let city = "Pune";
-
-          // Extract components
-          for (const component of result.address_components) {
-            if (component.types.includes("sublocality_level_2") || component.types.includes("sublocality")) {
-              ward = component.long_name;
-            }
-            if (component.types.includes("locality")) {
-              city = component.long_name;
-            }
-          }
-
-          return { lat, lng, address, ward, city };
-        }
-      } catch (err) {
-        console.warn("Google Maps reverse geocoding failed, using fallback:", err);
+      if (!response.ok) {
+        throw new Error(`Nominatim failed: ${response.status} ${response.statusText}`);
       }
-    }
 
-    // Default Pune Fallback
-    return {
-      lat,
-      lng,
-      address: `Viman Nagar Road, Pune, Maharashtra 411014`,
-      ward: "Viman Nagar",
-      city: "Pune",
-    };
+      const data = await response.json();
+      const address = data.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      const addressDetails = data.address || {};
+
+      const ward =
+        addressDetails.suburb ||
+        addressDetails.neighbourhood ||
+        addressDetails.city_district ||
+        addressDetails.village ||
+        addressDetails.hamlet ||
+        "Unknown Ward";
+
+      const city =
+        addressDetails.city ||
+        addressDetails.town ||
+        addressDetails.village ||
+        addressDetails.county ||
+        addressDetails.state ||
+        "Unknown City";
+
+      return {
+        lat,
+        lng,
+        address,
+        ward,
+        city,
+      };
+    } catch (err: any) {
+      console.warn("OpenStreetMap reverse geocoding failed, using fallback:", err);
+      return {
+        lat,
+        lng,
+        address: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+        ward: "Unknown Ward",
+        city: "Unknown City",
+      };
+    }
   }
 }
+

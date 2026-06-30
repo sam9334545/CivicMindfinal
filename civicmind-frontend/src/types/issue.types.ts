@@ -2,7 +2,7 @@ import { Timestamp } from "firebase/firestore";
 import { IssueCategory, IssueStatus, PriorityLevel } from "./user.types";
 
 export interface IssueMedia {
-  original: string;              // Firebase Storage URL
+  original: string;              // Cloudinary URL or external media URL
   thumbnail: string;
   type: "image" | "video";
 }

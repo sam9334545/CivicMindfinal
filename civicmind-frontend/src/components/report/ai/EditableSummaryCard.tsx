@@ -39,7 +39,7 @@ export const EditableSummaryCard: React.FC = () => {
             value={analysis.description}
             onChange={(e) => updateAIField("description", e.target.value)}
             rows={3}
-            className="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-civic-blue/20 focus:border-civic-blue mt-1"
+            className="flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-civic-blue/20 focus:border-civic-blue mt-1"
           />
         </div>
 
@@ -51,7 +51,7 @@ export const EditableSummaryCard: React.FC = () => {
               id="edit-category"
               value={analysis.category}
               onChange={(e) => updateAIField("category", e.target.value as IssueCategory)}
-              className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-civic-blue/20 focus:border-civic-blue mt-1"
+              className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-civic-blue/20 focus:border-civic-blue mt-1"
             >
               {ISSUE_CATEGORIES.map((cat) => (
                 <option key={cat.value} value={cat.value}>
@@ -68,7 +68,7 @@ export const EditableSummaryCard: React.FC = () => {
               id="edit-severity"
               value={analysis.severity}
               onChange={(e) => updateAIField("severity", e.target.value as any)}
-              className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-civic-blue/20 focus:border-civic-blue mt-1"
+              className="flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-civic-blue/20 focus:border-civic-blue mt-1"
             >
               <option value="critical">Critical (Immediate response)</option>
               <option value="high">High (Within 24h)</option>

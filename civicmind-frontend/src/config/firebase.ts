@@ -1,14 +1,18 @@
 import { initializeApp, getApp, type FirebaseApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { getAuth, GoogleAuthProvider, connectAuthEmulator } from "firebase/auth";
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 
 const firebaseApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
 const firebaseAuthDomain = import.meta.env.VITE_FIREBASE_AUTH_DOMAIN;
 const firebaseProjectId = import.meta.env.VITE_FIREBASE_PROJECT_ID;
-const firebaseStorageBucket = import.meta.env.VITE_FIREBASE_STORAGE_BUCKET;
 const firebaseMessagingSenderId = import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID;
 const firebaseAppId = import.meta.env.VITE_FIREBASE_APP_ID;
+const useAuthEmulator = import.meta.env.VITE_FIREBASE_USE_AUTH_EMULATOR === "true";
+const authEmulatorHost = import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_HOST ?? "127.0.0.1";
+const authEmulatorPort = Number(import.meta.env.VITE_FIREBASE_AUTH_EMULATOR_PORT) || 9099;
+const useFirestoreEmulator = import.meta.env.VITE_FIREBASE_USE_FIRESTORE_EMULATOR === "true";
+const firestoreEmulatorHost = import.meta.env.VITE_FIREBASE_FIRESTORE_EMULATOR_HOST ?? "127.0.0.1";
+const firestoreEmulatorPort = Number(import.meta.env.VITE_FIREBASE_FIRESTORE_EMULATOR_PORT) || 8080;
 
 if (!firebaseApiKey || !firebaseAuthDomain || !firebaseProjectId || !firebaseAppId) {
   throw new Error(
@@ -16,43 +20,10 @@ if (!firebaseApiKey || !firebaseAuthDomain || !firebaseProjectId || !firebaseApp
   );
 }
 
-function normalizeStorageBucket(projectId: string, bucket?: string): string {
-  if (!bucket) {
-    return `${projectId}.appspot.com`;
-  }
-
-  let normalizedBucket = bucket.trim();
-
-  if (normalizedBucket.startsWith("gs://")) {
-    normalizedBucket = normalizedBucket.replace(/^gs:\/\//, "");
-  }
-
-  // Handle common mistakes where the hosting/storage web domain is used instead of the bucket name.
-  if (normalizedBucket.endsWith(".firebasestorage.app")) {
-    normalizedBucket = normalizedBucket.replace(/\.firebasestorage\.app$/, ".appspot.com");
-  }
-
-  if (normalizedBucket.startsWith("http://") || normalizedBucket.startsWith("https://")) {
-    try {
-      const url = new URL(normalizedBucket);
-      normalizedBucket = url.hostname;
-    } catch (_err) {
-      // fall back to project bucket below
-    }
-  }
-
-  if (!normalizedBucket.includes(".")) {
-    return `${projectId}.appspot.com`;
-  }
-
-  return normalizedBucket;
-}
-
 const firebaseConfig = {
   apiKey: firebaseApiKey,
   authDomain: firebaseAuthDomain,
   projectId: firebaseProjectId,
-  storageBucket: normalizeStorageBucket(firebaseProjectId, firebaseStorageBucket),
   messagingSenderId: firebaseMessagingSenderId,
   appId: firebaseAppId,
 };
@@ -66,7 +37,16 @@ try {
 
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const storage = getStorage(app);
+
+if (useAuthEmulator) {
+  connectAuthEmulator(auth, `http://${authEmulatorHost}:${authEmulatorPort}`, {
+    disableWarnings: true,
+  });
+}
+
+if (useFirestoreEmulator) {
+  connectFirestoreEmulator(db, firestoreEmulatorHost, firestoreEmulatorPort);
+}
 
 export const googleProvider = new GoogleAuthProvider();
 

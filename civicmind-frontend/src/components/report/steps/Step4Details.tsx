@@ -60,7 +60,7 @@ export const Step4Details: React.FC<Step4DetailsProps> = ({ onNext, onBack }) =>
           onChange={(e) => setDescription(e.target.value.slice(0, MAX_CHARS))}
           rows={4}
           placeholder="Describe anything the AI might have missed — sounds, smells, frequency, when it started..."
-          className="flex w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-civic-blue/20 focus:border-civic-blue resize-none"
+          className="flex w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-civic-blue/20 focus:border-civic-blue resize-none"
         />
       </div>
 
@@ -72,7 +72,7 @@ export const Step4Details: React.FC<Step4DetailsProps> = ({ onNext, onBack }) =>
           type="datetime-local"
           value={incidentTime}
           onChange={(e) => setIncidentTime(e.target.value)}
-          className="flex h-10 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-civic-blue/20 focus:border-civic-blue"
+          className="flex h-10 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-500 mt-1 focus:outline-none focus:ring-2 focus:ring-civic-blue/20 focus:border-civic-blue"
         />
       </div>
 

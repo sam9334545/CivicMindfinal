@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { useReportStore } from "../../../stores/reportStore";
 import { useAuthStore } from "../../../stores/authStore";
 import { auth } from "../../../config/firebase";
-import { StorageService } from "../../../services/storageService";
+import { CloudinaryService } from "../../../services/cloudinaryService";
 import { IssueService } from "../../../services/issueService";
 import { useNotificationStore } from "../../../stores/notificationStore";
 import { Button } from "../../ui/button";
@@ -58,35 +58,47 @@ export const Step5Review: React.FC<Step5ReviewProps> = ({ onBack }) => {
       return;
     }
 
+    console.log("Submitting report", {
+      currentUid,
+      reporterName,
+      isAnonymous: draft.isAnonymous,
+      authCurrentUser: auth.currentUser?.uid,
+      media: media?.file?.name,
+      location: location?.address,
+      hasAnalysis: !!analysis,
+    });
+
     setSubmitting(true);
     setSubmitError(null);
+    setUploadState({ progress: 0, status: "compressing" });
 
     const issueId = nanoid(10);
 
-    // Step 1: Upload media to Firebase Storage
-    setUploadState({ progress: 0, status: "compressing" });
-
     try {
-      // Small delay to show compressing state visually
-      await new Promise((r) => setTimeout(r, 600));
-
       setUploadState({ progress: 5, status: "uploading" });
 
-      const mediaUrl = await new Promise<string>((resolve, reject) => {
-        const { cancel } = StorageService.uploadIssueMedia(
-          issueId,
-          media.file,
-          (progress) => setUploadState({ progress, status: "uploading" }),
-          (downloadUrl) => {
-            setUploadState({ progress: 100, status: "completed" });
-            resolve(downloadUrl);
-          },
-          (error) => {
-            reject(error);
-          }
-        );
-        cancelRef.current = cancel;
+      console.log("[Upload] Starting Cloudinary upload", {
+        fileName: media.file?.name,
+        fileType: media.file?.type,
+        fileSize: media.file?.size,
       });
+
+      const { promise: uploadPromise, cancel } = CloudinaryService.uploadImage(
+        media.file,
+        (progress) => {
+          console.debug("[Step5Review] upload progress", progress);
+          setUploadState((prev) => ({ ...prev, progress, status: "uploading" }));
+        }
+      );
+
+      cancelRef.current = cancel;
+      const mediaUrl = await uploadPromise;
+
+      console.log("[Cloudinary Response]", mediaUrl);
+      console.log("[Cloudinary URL]", mediaUrl);
+
+      setUploadState({ progress: 100, status: "completed" });
+      console.debug("[Step5Review] upload completed", mediaUrl);
 
       // Step 2: Write to Firestore
       const submittedId = await IssueService.submitIssue(
@@ -112,12 +124,7 @@ export const Step5Review: React.FC<Step5ReviewProps> = ({ onBack }) => {
     } catch (err: any) {
       console.error("Submission failed:", err);
       setSubmitError(err.message || "Submission failed. Please try again.");
-      setUploadState({ progress: 0, status: "failed", error: err.message });
-
-      if (media && issueId) {
-        const fileExtension = media.file.name.split(".").pop() || "bin";
-        await StorageService.deleteIssueMedia(issueId, fileExtension);
-      }
+      setUploadState((prev) => ({ ...prev, status: "failed", error: err.message || "Upload failed" }));
 
       setSubmitting(false);
     } finally {

@@ -163,6 +163,8 @@ export class IssueService {
       processingHistory: []
     };
 
+    console.log("[Firestore Payload]", issueDoc);
+
     const docRef = doc(db, "issues", finalIssueId);
     await setDoc(docRef, removeUndefined(issueDoc));
 

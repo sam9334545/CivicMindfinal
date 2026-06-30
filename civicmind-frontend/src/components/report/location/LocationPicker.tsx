@@ -34,8 +34,8 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     }
   }, []);
 
-  const handleSearchSelection = (lat: number, lng: number, _address: string) => {
-    selectManualCoords(lat, lng);
+  const handleSearchSelection = (lat: number, lng: number, address: string) => {
+    selectManualCoords(lat, lng, address);
   };
 
   const handleMarkerChange = (lat: number, lng: number) => {
@@ -65,8 +65,9 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         <div className="flex items-start space-x-3 text-sm text-gray-700">
           <MapPin className="w-5 h-5 text-civic-blue shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <span className="block text-[10px] uppercase font-bold tracking-wider text-gray-400">Formatted Address</span>
-            <span className="block font-medium text-gray-900 leading-tight">{selectedAddress}</span>
+          <span className="block text-[10px] uppercase font-bold tracking-wider text-gray-400">Current Address</span>
+          <span className="block font-medium text-gray-900 leading-tight">{selectedAddress}</span>
+          <span className="block text-[10px] text-gray-500">Reverse-geocoded from your GPS or pin location.</span>
           </div>
         </div>
 

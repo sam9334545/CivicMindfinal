@@ -26,10 +26,24 @@ export const useLocation = () => {
     }
   }, []);
 
-  const selectManualCoords = useCallback(async (lat: number, lng: number): Promise<LocationSelection> => {
+  const selectManualCoords = useCallback(async (lat: number, lng: number, address?: string): Promise<LocationSelection> => {
     setLoading(true);
     setError(null);
     setCoords({ lat, lng });
+
+    if (address) {
+      const selection: LocationSelection = {
+        lat,
+        lng,
+        address,
+        ward: "Unknown Ward",
+        city: "Pune",
+      };
+      setAddressInfo(selection);
+      setLoading(false);
+      return selection;
+    }
+
     try {
       const selection = await LocationService.reverseGeocode(lat, lng);
       setAddressInfo(selection);
